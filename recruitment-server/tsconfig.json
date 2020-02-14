@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "es2017",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "rules": {
+    "no-unused-vars": false,
+    "quotemark": false,
+    "no-var-requires": false,
+    "semicolon": false,
+    "ordered-imports": false,
+    "object-literal-sort-keys": false,
+    "no-console": false,
+    "arrow-parens": false,
+    "max-line-length": false,
+    "member-access": false,
+    "no-empty": false,
+    "trailing-comma": false,
+    "member-ordering": false,
+    "max-classes-per-file": false,
+    "variable-name": false,
+    "no-bitwise": false,
+    "space-before-function-paren": false,
+    "no-unused-expression": false,
+    "indent": false,
+    "whitespace": false,
+    "react-hooks-nesting": "error"
+  }
+}

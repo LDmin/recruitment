@@ -1,0 +1,1 @@
+export const GXRC_REPOSITORY = Symbol('GXRC_REPOSITORY')
