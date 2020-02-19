@@ -8,11 +8,13 @@ scalar Date
 
 type Job {
   id: ID!
+  detailUrl: String!
   name: String!
   company: String!
   address: String!
   pay: String!
   updateAt: Date!
+  location: [Float!]
 }
 
 type Mutation {
@@ -29,7 +31,6 @@ input NewRecipeInput {
 type Query {
   recipe(id: String!): Recipe!
   recipes(skip: Int = 0, take: Int = 2): [Recipe!]!
-  jobs(keyword: String!, type: String!): [Job!]!
 }
 
 type Recipe {
@@ -42,4 +43,6 @@ type Recipe {
 
 type Subscription {
   recipeAdded: Recipe!
+  jobs(keyword: String!, type: String!): [Job!]!
+  postupdated: [Job!]!
 }

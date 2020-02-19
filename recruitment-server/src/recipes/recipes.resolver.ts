@@ -10,7 +10,7 @@ const pubSub = new PubSub();
 
 @Resolver(of => Recipe)
 export class RecipesResolver {
-  constructor(private readonly recipesService: RecipesService) {}
+  constructor(private readonly recipesService: RecipesService) { }
 
   @Query(returns => Recipe)
   async recipe(@Args('id') id: string): Promise<Recipe> {

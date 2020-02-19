@@ -1,9 +1,12 @@
-import { Field, ID, ObjectType } from 'type-graphql';
+import { Field, ID, ObjectType, Int, Float } from 'type-graphql';
 
 @ObjectType()
 export class Job {
   @Field(type => ID)
   id: string;
+
+  @Field()
+  detailUrl: string;
 
   @Field()
   name: string;
@@ -20,4 +23,6 @@ export class Job {
   @Field()
   updateAt: Date;
 
+  @Field(type => [Float], { nullable: true })
+  location: [number, number]
 }

@@ -3,6 +3,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { RecipesModule } from './recipes/recipes.module';
 import { JobModule } from './job/jobs.module';
 import { CrawlerModule } from './crawler/crawler.module';
+import { PubSubModule } from './pub-sub/pub-sub.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { CrawlerModule } from './crawler/crawler.module';
     }),
     JobModule,
     CrawlerModule,
+    PubSubModule,
   ],
 })
 export class AppModule { }
