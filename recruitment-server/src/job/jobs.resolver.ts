@@ -29,7 +29,7 @@ export class JobResolver {
 
   @Subscription(returns => [Job])
   jobs(@Args() jobsArgs: JobsArgs) {
-    console.log(111);
+    console.log(jobsArgs.keyword);
 
     switch (jobsArgs.type) {
       case JobFetchType.GXRC: this.gxrcService.getJobs(jobsArgs.keyword);

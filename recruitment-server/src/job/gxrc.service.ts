@@ -43,6 +43,10 @@ export class GxrcService implements FetchJobsServie {
   }
 
   async getJobs(keyword: string) {
+    if (!keyword) {
+      return
+    }
+
     const resArray: any[] = await this.crawlerService.queuePage(`https://s.gxrc.com/sJob?keyword=${keyword}&schType=1&page={{page}}`, 'li.PagedList-skipToNext')
 
     const items: Job[] = []
