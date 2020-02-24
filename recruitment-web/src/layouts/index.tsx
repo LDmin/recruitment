@@ -1,14 +1,7 @@
 import React from 'react';
-import { ApolloClient } from 'apollo-client';
-import { createHttpLink } from 'apollo-link-http';
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import { ApolloProvider } from '@apollo/react-hooks';
-// import { ApolloProvider } from 'react-apollo'
-
-import { split } from 'apollo-link';
-import { HttpLink } from 'apollo-link-http';
-import { WebSocketLink } from 'apollo-link-ws';
-import { getMainDefinition } from 'apollo-utilities';
+import { split, ApolloClient, HttpLink, InMemoryCache, ApolloProvider } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { WebSocketLink } from '@apollo/link-ws';
 
 // Create an http link:
 const httpLink = new HttpLink({
@@ -37,12 +30,6 @@ const link = split(
   wsLink,
   httpLink,
 );
-
-// 我们可以自定义fetch，对请求进行统一处理
-// const customFetch = (uri, options) => {
-//     return fetch(uri, options);
-// };
-
 
 const client = new ApolloClient({
   // 连接到graphql服务器

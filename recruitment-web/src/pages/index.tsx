@@ -1,9 +1,10 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Map, MapProps, Markers, Marker, InfoWindow, InfoWindowProps } from 'react-amap';
-import { useQuery, useSubscription } from '@apollo/react-hooks';
+import { gql, useSubscription } from '@apollo/client';
 import styled from 'styled-components'
-import gql from "graphql-tag";
 import TextField from '@material-ui/core/TextField';
+import { useObservable } from 'rxjs-hooks';
+import { map, withLatestFrom } from 'rxjs/operators'
 
 const Wrapper = styled.div`
   position: relative;
@@ -44,12 +45,30 @@ const subscriptionJobs = gql`
   }
 `;
 
+const subscriptionJob = gql`
+  subscription Job($keyword: String!){
+    job(type: "gxrc", keyword: $keyword) {
+      id,
+      name,
+      company,
+      pay,
+      address,
+      location,
+    }
+  }
+`;
+
 export default function () {
   const [showInfoWindowId, setShowInfoWindowId] = useState('')
   const [keyword, setKeyword] = useState('web前端工程师')
-  const { loading, error, data } = useSubscription(subscriptionJobs, { variables: { keyword } })
+  const { loading, error, data } = useSubscription<{ job: Job }>(subscriptionJob, { variables: { keyword } })
 
-  const jobs: Job[] = data?.jobs ?? []
+  const jobs = useObservable<Job[], [typeof data]>((input$, state$) => input$.pipe(
+    withLatestFrom(state$),
+    map(([[_data], preVal]) => (_data?.job && !preVal.some(p => p.id === _data.job.id)) ? [...preVal, _data?.job] : preVal),
+  ), [], [data])
+
+  // const jobs: Job[] = data?.jobs ?? []
 
   const center: MapProps['center'] = useMemo(() => [108.363911, 22.811535], []);
   const plugins: MapProps['plugins'] = useMemo(() => ['ToolBar'], []);
