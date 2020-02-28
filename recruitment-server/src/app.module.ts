@@ -11,6 +11,11 @@ import { PubSubModule } from './pub-sub/pub-sub.module';
     GraphQLModule.forRoot({
       installSubscriptionHandlers: true,
       autoSchemaFile: 'schema.gql',
+      context: async (integrationContext) => {
+        return ({
+          req: integrationContext.req
+        })
+      },
     }),
     JobModule,
     CrawlerModule,

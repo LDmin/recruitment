@@ -15,9 +15,9 @@ const crawler = new Crawler({
 export class CrawlerService {
   readonly crawler = crawler
 
-  queue(uri: string) {
+  queue(uri: string, description?: any) {
     return new Promise<any>((resolve, reject) => {
-      console.log(`正在获取：`, uri);
+      console.log(`正在获取：`, uri, description ?? '');
       this.crawler.queue({
         uri: encodeURI(uri),
         forceUTF8: true,

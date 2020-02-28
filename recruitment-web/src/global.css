@@ -5,3 +5,109 @@ html, body, #root {
 body {
   margin: 0;
 }
+
+a {
+  color: #415b94;
+}
+a:hover {
+  color: #e46056;
+}
+.text-muted {
+  color: #909fa7;
+}
+.text-primary {
+  color: #5d9cec;
+}
+a.text-primary:hover {
+  color: #2f80e7;
+}
+.text-success {
+  color: #27c24c;
+}
+a.text-success:hover {
+  color: #1e983b;
+}
+.text-info {
+  color: #23b7e5;
+}
+a.text-info:hover {
+  color: #1797be;
+}
+.text-warning {
+  color: #ff902b;
+}
+a.text-warning:hover {
+  color: #f77600;
+}
+.text-danger {
+  color: #f05050;
+}
+.text-error {
+  color: #f5222d;
+}
+a.text-danger:hover {
+  color: #ec2121;
+}
+.text-white {
+  color: #fff;
+}
+.text-inverse {
+  color: #131e26;
+}
+.text-alpha {
+  color: rgba(255, 255, 255, 0.5);
+}
+.text-pink {
+  color: #f532e5;
+}
+.text-purple {
+  color: #7266ba;
+}
+.text-dark {
+  color: #3a3f51;
+}
+.text-alpha-inverse {
+  color: rgba(0, 0, 0, 0.5);
+}
+.text-green {
+  color: #37bc9b;
+}
+.text-yellow {
+  color: #fad732;
+}
+.text-red {
+  color: #e46056;
+}
+.text-gray-darker {
+  color: #232735;
+}
+.text-gray-dark {
+  color: #3a3f51;
+}
+.text-gray {
+  color: #dde6e9;
+}
+.text-gray-light {
+  color: #e4eaec;
+}
+.text-gray-lighter {
+  color: #edf1f2;
+}
+.text-sm {
+  font-size: 11.9px;
+}
+.text-md {
+  font-size: 26.6px;
+}
+.text-lg {
+  font-size: 42px;
+}
+.text-left {
+  text-align: left;
+}
+.text-right {
+  text-align: right;
+}
+.text-center {
+  text-align: center;
+}

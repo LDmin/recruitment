@@ -18,7 +18,8 @@
     "rxjs": "^6.5.4",
     "rxjs-hooks": "^0.5.2",
     "styled-components": "^5.0.1",
-    "subscriptions-transport-ws": "^0.9.16"
+    "subscriptions-transport-ws": "^0.9.16",
+    "uuid": "^7.0.0"
   },
   "devDependencies": {
     "@types/jest": "^23.3.12",
@@ -26,6 +27,7 @@
     "@types/react-dom": "^16.0.11",
     "@types/react-test-renderer": "^16.0.3",
     "@types/styled-components": "^4.4.3",
+    "@types/uuid": "^3.4.7",
     "babel-eslint": "^9.0.0",
     "eslint": "^5.4.0",
     "eslint-config-umi": "^1.4.0",

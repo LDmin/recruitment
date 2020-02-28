@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, Subscription } from '@nestjs/graphql';
+import { Resolver, Query, Args, Subscription, Context } from '@nestjs/graphql';
 import { Job } from './models/jobs';
 import { JobsArgs } from './dto/jobs.args';
 import { JobService } from './jobs.service';
@@ -26,6 +26,27 @@ export class JobResolver {
   //     default: return this.gxrcService.findAll('nodejs');
   //   }
   // }
+
+  @Subscription(returns => Job, {
+    filter: (payload: { clientId: string, fetchId: string }, variables: JobsArgs) => {
+      return (
+        payload.clientId === variables.clientId
+        && payload.fetchId === variables.fetchId
+      )
+
+    }
+  })
+  job(@Args() jobsArgs: JobsArgs) {
+    console.log(jobsArgs.keyword);
+
+    switch (jobsArgs.type) {
+      case JobFetchType.GXRC: this.gxrcService.getJob(jobsArgs);
+        break;
+      default: this.gxrcService.getJobs('nodejs');
+    }
+
+    return this.pubSubService.pubSub.asyncIterator('job');
+  }
 
   @Subscription(returns => [Job])
   jobs(@Args() jobsArgs: JobsArgs) {

@@ -7,8 +7,10 @@
 scalar Date
 
 type Job {
-  id: ID!
+  clientId: String!
   detailUrl: String!
+  id: ID!
+  fetchId: String!
   name: String!
   company: String!
   address: String!
@@ -43,6 +45,7 @@ type Recipe {
 
 type Subscription {
   recipeAdded: Recipe!
-  jobs(keyword: String!, type: String!): [Job!]!
+  job(clientId: String!, fetchId: String!, keyword: String!, type: String!, cityId: Float!): Job!
+  jobs(clientId: String!, fetchId: String!, keyword: String!, type: String!, cityId: Float!): [Job!]!
   postupdated: [Job!]!
 }

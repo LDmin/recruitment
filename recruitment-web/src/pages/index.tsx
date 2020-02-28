@@ -1,10 +1,20 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import { Map, MapProps, Markers, Marker, InfoWindow, InfoWindowProps } from 'react-amap';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import { Map, MapProps, Markers, Marker, InfoWindow, InfoWindowProps, ArrayLngLat } from 'react-amap';
 import { gql, useSubscription } from '@apollo/client';
 import styled from 'styled-components'
 import TextField from '@material-ui/core/TextField';
-import { useObservable } from 'rxjs-hooks';
-import { map, withLatestFrom } from 'rxjs/operators'
+import { useObservable, useEventCallback } from 'rxjs-hooks';
+import { map, withLatestFrom, mergeMap } from 'rxjs/operators'
+import { v4 as uuid } from 'uuid';
+import useParam from '@/utils/useParam';
+import { Paper, InputBase, IconButton, Divider, Select, MenuItem } from '@material-ui/core';
+import SearchIcon from '@material-ui/icons/Search';
+import HomeIcon from '@material-ui/icons/Home';
+import JobList from '@/components/JobList';
+import SelectCity from '@/components/SelectCity';
+import SpaceBetween from '@/components/SpaceBetween';
+import citys from '@/utils/city';
+import { of } from 'rxjs';
 
 const Wrapper = styled.div`
   position: relative;
@@ -20,17 +30,42 @@ const Wrapper = styled.div`
     position: absolute;
     top: 1.6rem;
     left: 1.6rem;
+    
+    > form.MuiPaper-root {
+      padding: 2px 4px 2px 16px;
+      display: flex;
+      align-items: center;
+      width: 400;
+
+      input {
+        font-size: 0.875rem;
+      }
+
+      > hr.MuiDivider-root {
+        height: 28px;
+        margin: 4px;
+      }
+    }
+
+    > .list {
+      margin-top: .8rem;
+      width: 25rem;
+      height: calc(100vh - 7.2rem);
+      overflow: auto;
+    }
   }
+
 `
 
-interface Job {
-  id: string
-  name: string
-  company: string
-  pay: string
-  address: string
-  location: [number, number]
-}
+const MarkerContentWrapper = styled(Paper)`
+  padding: 8px;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+  text-align: center;
+  border-radius: 50%;
+  /* background: orange; */
+`
 
 const subscriptionJobs = gql`
   subscription Jobs($keyword: String!){
@@ -46,8 +81,10 @@ const subscriptionJobs = gql`
 `;
 
 const subscriptionJob = gql`
-  subscription Job($keyword: String!){
-    job(type: "gxrc", keyword: $keyword) {
+  subscription Job($keyword: String!, $clientId: String!, $fetchId: String!, $cityId: Float!){
+    job(clientId: $clientId, fetchId: $fetchId, type: "gxrc", keyword: $keyword, cityId: $cityId) {
+      clientId,
+      fetchId,
       id,
       name,
       company,
@@ -59,33 +96,125 @@ const subscriptionJob = gql`
 `;
 
 export default function () {
-  const [showInfoWindowId, setShowInfoWindowId] = useState('')
-  const [keyword, setKeyword] = useState('web前端工程师')
-  const { loading, error, data } = useSubscription<{ job: Job }>(subscriptionJob, { variables: { keyword } })
-
-  const jobs = useObservable<Job[], [typeof data]>((input$, state$) => input$.pipe(
-    withLatestFrom(state$),
-    map(([[_data], preVal]) => (_data?.job && !preVal.some(p => p.id === _data.job.id)) ? [...preVal, _data?.job] : preVal),
-  ), [], [data])
-
-  // const jobs: Job[] = data?.jobs ?? []
-
-  const center: MapProps['center'] = useMemo(() => [108.363911, 22.811535], []);
+  const ReactAMap = useRef<{ ins?: any, districtSearch?: any }>({})
+  // const center: MapProps['center'] = useMemo(() => , []);
   const plugins: MapProps['plugins'] = useMemo(() => ['ToolBar'], []);
   const infoWindowOffset: InfoWindowProps['offset'] = useMemo(() => [0, -30], []);
+  const clientId = useMemo(() => uuid(), [])
+  const [mapIns, setMapIns] = useState<any>(null)
+
+  const [showInfoWindowId, setShowInfoWindowId] = useState('')
+
+  const [onCityChange, { selectedCity }] = useEventCallback<City, { selectedCity: City }>((event$) =>
+    event$.pipe(
+      mergeMap(async (city: City) => {
+        if (city.location) {
+          return { selectedCity: city }
+        } else {
+          const aaa = await ReactAMap.current.districtSearch?.search(city.name)
+          // if (aaa?.result?.info === 'OK') {
+          const center = aaa?.result.districtList[0].center
+          // console.log(aaa, center)
+          const _city: City = {
+            ...city,
+            location: [center.lng, center.lat]
+          }
+          return {
+            selectedCity: _city
+          }
+          // }
+        }
+
+      }),
+      // map(([city]) => [city]),
+    ),
+    {
+      selectedCity: citys.find(c => c.id === 2)!
+    }
+  )
+
+  const { param, setParam, fetchId } = useParam({
+    keyword: '小学英语老师',
+    cityId: selectedCity.id,
+  })
+
+  // const [selectedCity, setSelectedCity] = useState<City>(() => citys.find(c => c.id === param.cityId)!)
+
+  const { loading, error, data } = useSubscription<{ job: Job }>(subscriptionJob, {
+    variables: {
+      keyword: param.keyword,
+      clientId,
+      fetchId,
+      cityId: param.cityId,
+    }
+  })
+  // console.log(data)
+  const [jobs] = useObservable<[Job[], string], [typeof data, string]>((inputs$, state$) => inputs$.pipe(
+    withLatestFrom(state$),
+    map(([[_data, _fetchId], [preData, preFetchId]]) => {
+      if (_fetchId === preFetchId) {
+        if (_data?.job && _data.job.fetchId === _fetchId && !preData.some(p => p.id === _data.job.id)) {
+          return [[...preData, _data?.job], _fetchId]
+        } else {
+          return [preData, _fetchId]
+        }
+      } else {
+        return [[], _fetchId]
+      }
+    }),
+  ), [[], fetchId], [data, fetchId])
+
+  const [onSearchChange, searchValue] = useEventCallback<React.ChangeEvent<HTMLTextAreaElement>, string>((event$) =>
+    event$.pipe(
+      map(event => event.target.value),
+    ),
+    param.keyword
+  )
+
+  error && console.log(error)
+  // const jobs: Job[] = data?.jobs ?? []
 
   const showJob = jobs.find(j => j.id === showInfoWindowId)
 
-  const events = useMemo(() => ({
-    click: (e: any) => {
-      const id = e.target?.B?.extData.id
-      setShowInfoWindowId(id)
-    }
-  }), [])
+  const showInfoWindow = useCallback((job: Job) => {
+    mapIns?.panTo(job.location)
+    setShowInfoWindowId(job.id)
+  }, [mapIns])
 
-  const onKeywordChange = useCallback((e) => {
-    setKeyword(e.target.value)
-  }, [])
+  const markerEvents = useMemo(() => ({
+    click: (e: any) => {
+      const job = e.target?.B?.extData
+      showInfoWindow(job)
+    }
+  }), [showInfoWindow])
+
+  const mapEvents = useMemo(() => ({
+    created: (ins: any) => {
+      ReactAMap.current.ins = ins
+      window.AMap.plugin('AMap.DistrictSearch', () => {
+        ReactAMap.current.districtSearch = {
+          search: (value: string) => new Promise((resolve) => {
+            const districtSearch = new window.AMap.DistrictSearch({
+              subdistrict: 0,
+            })
+            districtSearch.search(value, (status: string, result: any) => {
+              resolve({ status, result })
+            })
+          })
+        }
+      });
+    },
+    click: () => {
+      showInfoWindowId && setShowInfoWindowId('')
+    }
+  }), [showInfoWindowId])
+
+  const onClickSearch = useCallback(() => {
+    setParam({
+      keyword: searchValue,
+      cityId: selectedCity.id,
+    })
+  }, [searchValue, selectedCity.id, setParam])
 
   // if (loading) return <p>Loading...</p>;
   if (error) return <p>Error : {error?.message}</p>;
@@ -95,17 +224,22 @@ export default function () {
       <Map
         zoom={14}
         plugins={plugins}
-        center={center}
+        center={selectedCity.location}
+        events={mapEvents}
       >
         {
-          jobs.map(j => (
+          jobs.map((j, i) => (
             <Marker
               key={j.id}
               position={j.location}
-              events={events}
+              events={markerEvents}
               label={j.name}
               extData={j}
-            />
+            >
+              <MarkerContentWrapper>
+                {i + 1}
+              </MarkerContentWrapper>
+            </Marker>
           ))
         }
         {
@@ -126,12 +260,31 @@ export default function () {
 
       </Map>
       <div className="search">
-        <TextField
-          label="Filled"
-          variant="filled"
-          value={keyword}
-          onChange={onKeywordChange}
-        />
+        <Paper component="form">
+          <SelectCity value={selectedCity} onChange={onCityChange} />
+          <SpaceBetween width></SpaceBetween>
+          <Divider orientation="vertical" />
+          <SpaceBetween width></SpaceBetween>
+          <InputBase
+            placeholder="职位搜索..."
+            // inputProps={{ 'aria-label': '职位搜索...' }}
+            value={searchValue}
+            onChange={onSearchChange}
+          />
+          <IconButton
+            type="submit"
+            onClick={onClickSearch}
+          >
+            <SearchIcon />
+          </IconButton>
+          <Divider orientation="vertical" />
+          <IconButton color="primary" aria-label="directions">
+            <HomeIcon color="primary" />
+          </IconButton>
+        </Paper>
+        <div className="list">
+          <JobList jobs={jobs} onClickListItem={showInfoWindow}></JobList>
+        </div>
       </div>
     </Wrapper>
   );
