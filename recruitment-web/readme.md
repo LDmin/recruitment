@@ -1,7 +1,7 @@
 ## 技术栈
 react + typescript + rxjs + react-amap + apollo
 ## 本地开发
-[0. 首先启动server端](https://github.com/LDmin/recruitment/tree/master/recruitment-server)
+0. [首先启动server端](https://github.com/LDmin/recruitment/tree/master/recruitment-server)
 1. 执行npm install安装依赖包
 2. 执行npm start启动项目
 3. 启动跨域的chrome浏览器
