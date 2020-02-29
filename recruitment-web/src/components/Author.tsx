@@ -23,7 +23,7 @@ interface IProps {
 
 const Author: React.SFC<IProps> = () => {
 
-  const openResume = useCallback(() => window.open('http://localhost:3000/public/陆冬敏个人简历.pdf'), [])
+  const openResume = useCallback(() => window.open('http://localhost:3800/public/陆冬敏个人简历.pdf'), [])
 
   return (
     <Button color="primary" onClick={openResume}>

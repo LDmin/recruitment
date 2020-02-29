@@ -8,11 +8,11 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useGlobalPipes(new ValidationPipe());
   app.useStaticAssets(join(__dirname, '../public/'), {
-    prefix: '/public/', // 虚拟名称 http://localhost:3010/static/...png
+    prefix: '/public/',
   });
   app.useStaticAssets(join(__dirname, '../../recruitment-web/dist/'), {
-    prefix: '/', // 虚拟名称 http://localhost:3010/static/...png
+    prefix: '/',
   });
-  await app.listen(3000);
+  await app.listen(3800);
 }
 bootstrap();
