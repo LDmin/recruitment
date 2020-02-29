@@ -10,6 +10,6 @@
   </li>
 </ul>
 <h2>待改进</h2>
-<input type="checkbox" checked>设置家的位置</input> <br>
+- [] ReadMe_CN设置家的位置
 <input type="checkbox" checked>请求api能够查询家到公司的路线并展示在地图上</input> <br>
 <input type="checkbox" checked>api跨域方式从请求跨域的chrome浏览器改为代理方式（可能不做）</input> <br>
