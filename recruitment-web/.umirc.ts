@@ -29,7 +29,7 @@ const config: IConfig = {
       },
     }],
   ],
-  publicPath: './src/public/'
+  // publicPath: './src/public/'
 }
 
 export default config;

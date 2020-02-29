@@ -10,6 +10,9 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '../public/'), {
     prefix: '/public/', // 虚拟名称 http://localhost:3010/static/...png
   });
+  app.useStaticAssets(join(__dirname, '../../recruitment-web/dist/'), {
+    prefix: '/', // 虚拟名称 http://localhost:3010/static/...png
+  });
   await app.listen(3000);
 }
 bootstrap();
