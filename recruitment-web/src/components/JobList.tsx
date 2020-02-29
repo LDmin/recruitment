@@ -10,11 +10,12 @@ import { Paper } from '@material-ui/core';
 import SpaceBetween from './SpaceBetween';
 
 interface IProps {
+  loading: boolean
   jobs: Job[]
   onClickListItem: (job: Job) => void
 }
 
-const JobList: React.SFC<IProps> = ({ jobs, onClickListItem }) => {
+const JobList: React.SFC<IProps> = ({ jobs, onClickListItem, loading }) => {
   return (
     <Paper>
       <List>
@@ -50,7 +51,7 @@ const JobList: React.SFC<IProps> = ({ jobs, onClickListItem }) => {
                 />
               </ListItem>
               {
-                i < jobs.length ? (
+                i < jobs.length - 1 ? (
                   <Divider component="li" />
                 ) : null
               }

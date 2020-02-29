@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
-import { Map, MapProps, Markers, Marker, InfoWindow, InfoWindowProps, ArrayLngLat } from 'react-amap';
+import { Map, MapProps, Markers, Marker, InfoWindow, InfoWindowProps, ArrayLngLat, MarkerProps } from 'react-amap';
 import { gql, useSubscription } from '@apollo/client';
 import styled from 'styled-components'
 import TextField from '@material-ui/core/TextField';
@@ -7,14 +7,15 @@ import { useObservable, useEventCallback } from 'rxjs-hooks';
 import { map, withLatestFrom, mergeMap } from 'rxjs/operators'
 import { v4 as uuid } from 'uuid';
 import useParam from '@/utils/useParam';
-import { Paper, InputBase, IconButton, Divider, Select, MenuItem } from '@material-ui/core';
+import { Paper, InputBase, IconButton, Divider, Select, MenuItem, Button } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 import HomeIcon from '@material-ui/icons/Home';
 import JobList from '@/components/JobList';
 import SelectCity from '@/components/SelectCity';
 import SpaceBetween from '@/components/SpaceBetween';
 import citys from '@/utils/city';
-import { of } from 'rxjs';
+import Author from '@/components/Author';
+import { useLocalStorageState } from 'react-storage-hooks';
 
 const Wrapper = styled.div`
   position: relative;
@@ -26,13 +27,14 @@ const Wrapper = styled.div`
     left: 0;
   }
 
-  > .search {
+  > .left {
     position: absolute;
     top: 1.6rem;
     left: 1.6rem;
-    
-    > form.MuiPaper-root {
-      padding: 2px 4px 2px 16px;
+
+    > .MuiPaper-root {
+      /* padding: 2px 4px 2px 16px; */
+      padding: 0 16px;
       display: flex;
       align-items: center;
       width: 400;
@@ -53,6 +55,19 @@ const Wrapper = styled.div`
       height: calc(100vh - 7.2rem);
       overflow: auto;
     }
+  }
+
+  > .right {
+    position: absolute;
+    top: 1.6rem;
+    right: 1.6rem;
+
+    > .MuiPaper-root {
+      padding: 4px 16px;
+      display: flex;
+      align-items: center;
+    }
+
   }
 
 `
@@ -97,11 +112,12 @@ const subscriptionJob = gql`
 
 export default function () {
   const ReactAMap = useRef<{ ins?: any, districtSearch?: any }>({})
-  // const center: MapProps['center'] = useMemo(() => , []);
   const plugins: MapProps['plugins'] = useMemo(() => ['ToolBar'], []);
   const infoWindowOffset: InfoWindowProps['offset'] = useMemo(() => [0, -30], []);
+  const markerOffset: MarkerProps['offset'] = useMemo(() => [-12, -20], []);
   const clientId = useMemo(() => uuid(), [])
-  const [mapIns, setMapIns] = useState<any>(null)
+  const [mapSelectMode, setMapSelectMode] = useState<'map' | 'home'>('map')
+  const [homeLocation, setHomeLocation] = useLocalStorageState<any>('homeLocation', null)
 
   const [showInfoWindowId, setShowInfoWindowId] = useState('')
 
@@ -177,13 +193,13 @@ export default function () {
   const showJob = jobs.find(j => j.id === showInfoWindowId)
 
   const showInfoWindow = useCallback((job: Job) => {
-    mapIns?.panTo(job.location)
+    ReactAMap.current.ins?.panTo(job.location)
     setShowInfoWindowId(job.id)
-  }, [mapIns])
+  }, [])
 
   const markerEvents = useMemo(() => ({
     click: (e: any) => {
-      const job = e.target?.B?.extData
+      const job = e.target?.B?.extData;
       showInfoWindow(job)
     }
   }), [showInfoWindow])
@@ -204,10 +220,15 @@ export default function () {
         }
       });
     },
-    click: () => {
-      showInfoWindowId && setShowInfoWindowId('')
+    click: (e: any) => {
+      if (mapSelectMode === 'map') {
+        showInfoWindowId && setShowInfoWindowId('')
+      } else if (mapSelectMode === 'home') {
+        setHomeLocation([e.lnglat.lng, e.lnglat.lat])
+        setMapSelectMode('map')
+      }
     }
-  }), [showInfoWindowId])
+  }), [showInfoWindowId, mapSelectMode])
 
   const onClickSearch = useCallback(() => {
     setParam({
@@ -215,6 +236,21 @@ export default function () {
       cityId: selectedCity.id,
     })
   }, [searchValue, selectedCity.id, setParam])
+
+  const onClickSetHome = useCallback(() => {
+    setMapSelectMode('home')
+  }, [])
+
+  let homeText: React.ReactNode
+  if (mapSelectMode === 'home') {
+    homeText = <span className="text-muted">正在设置家的位置...</span>
+  } else {
+    if (homeLocation) {
+      homeText = homeLocation.join(',')
+    } else {
+      homeText = <span className="text-muted">设置家的位置...</span>
+    }
+  }
 
   // if (loading) return <p>Loading...</p>;
   if (error) return <p>Error : {error?.message}</p>;
@@ -235,12 +271,23 @@ export default function () {
               events={markerEvents}
               label={j.name}
               extData={j}
+              offset={markerOffset}
             >
               <MarkerContentWrapper>
                 {i + 1}
               </MarkerContentWrapper>
             </Marker>
           ))
+        }
+        {
+          homeLocation && (
+            <Marker
+              position={homeLocation}
+              offset={markerOffset}
+            >
+              <HomeIcon color="primary" />
+            </Marker>
+          )
         }
         {
           showJob && (
@@ -259,8 +306,8 @@ export default function () {
         }
 
       </Map>
-      <div className="search">
-        <Paper component="form">
+      <div className="left">
+        <Paper>
           <SelectCity value={selectedCity} onChange={onCityChange} />
           <SpaceBetween width></SpaceBetween>
           <Divider orientation="vertical" />
@@ -278,13 +325,19 @@ export default function () {
             <SearchIcon />
           </IconButton>
           <Divider orientation="vertical" />
-          <IconButton color="primary" aria-label="directions">
+          <Button color="primary" onClick={onClickSetHome}>
             <HomeIcon color="primary" />
-          </IconButton>
+            {homeText}
+          </Button>
         </Paper>
         <div className="list">
-          <JobList jobs={jobs} onClickListItem={showInfoWindow}></JobList>
+          <JobList loading={loading} jobs={jobs} onClickListItem={showInfoWindow}></JobList>
         </div>
+      </div>
+      <div className="right">
+        <Paper>
+          <Author></Author>
+        </Paper>
       </div>
     </Wrapper>
   );
